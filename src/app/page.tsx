@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import StarBackground from "../components/StarBackground"; // パスを修正
 
 interface Song {
   title: string;
@@ -42,42 +43,43 @@ export default function Home() {
   };
 
   return (
-    <div style={{ textAlign: "center", fontFamily: "Arial, sans-serif" }}>
-      <h2>{selectedVideo ? "関連する楽曲" : "日本の人気音楽"}</h2>
-      <div className="song-list">
-        {displayedSongs.map((song, index) => (
-          <div
-            key={song.videoId || `song-${index}`}
-            className="song-item"
-            onClick={() => fetchRelatedSongs(song.videoId)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              cursor: "pointer",
-              margin: "10px auto",
-              padding: "10px",
-              width: "60%",
-              border: `2px solid ${selectedVideo === song.videoId ? "#0070f3" : "#ddd"}`,
-              borderRadius: "10px",
-              transition: "background 0.3s, border 0.3s",
-              background: selectedVideo === song.videoId ? "#f0f8ff" : "white",
-            }}
-          >
-            <img
-              src={song.thumbnail}
-              alt="thumbnail"
-              width="80"
-              height="80"
-              style={{ borderRadius: "5px", marginRight: "15px" }}
-            />
-            <div>
-              <strong>{song.title}</strong>
-              <br />
-              <small>{song.artist}</small>
+    <StarBackground>
+      <div style={{ textAlign: "center", fontFamily: "Arial, sans-serif" }}>
+        <h2>{selectedVideo ? "関連する楽曲" : "日本の人気音楽"}</h2>
+        <div className="song-list">
+          {displayedSongs.map((song, index) => (
+            <div
+              key={song.videoId || `song-${index}`}
+              className="song-item"
+              onClick={() => fetchRelatedSongs(song.videoId)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                cursor: "pointer",
+                margin: "10px auto",
+                padding: "10px",
+                width: "60%",
+                border: `2px solid ${selectedVideo === song.videoId ? "#0070f3" : "#ddd"}`,
+                borderRadius: "10px",
+                transition: "background 0.3s, border 0.3s",
+              }}
+            >
+              <img
+                src={song.thumbnail}
+                alt="thumbnail"
+                width="80"
+                height="80"
+                style={{ borderRadius: "5px", marginRight: "15px" }}
+              />
+              <div>
+                <strong>{song.title}</strong>
+                <br />
+                <small>{song.artist}</small>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
+    </StarBackground>
   );
 }
