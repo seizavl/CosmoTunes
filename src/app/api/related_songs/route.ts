@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     }
 
     await ytmusic.initialize();
-    const relatedSongs = await ytmusic.getUpNexts(videoId);
+    const relatedSongs = (await ytmusic.getUpNexts(videoId)).slice(0, 10);
 
     console.log("Fetched related songs:", relatedSongs);
 
