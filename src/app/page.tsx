@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import BubbleBackground from "../components/Star";
 import StarBackground from "@/components/StarBackground";
+import StarGenerate from "../components/Star";
 
 interface Song {
   title: string;
@@ -45,7 +45,7 @@ export default function Home() {
 
   return (
     <StarBackground>
-      <BubbleBackground songs={displayedSongs} />
+      <StarGenerate songs={displayedSongs} />
     </StarBackground>
   );
 }

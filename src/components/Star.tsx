@@ -1,7 +1,7 @@
-"use client";
-
 import React, { useEffect, useRef, useState } from 'react';
-import gsap from 'gsap';
+import * as THREE from 'three';
+import { gsap } from 'gsap';
+import SongDetails from './SongDetails';  // 新しく作成したコンポーネントをインポート
 
 interface Song {
   title: string;
@@ -11,155 +11,193 @@ interface Song {
   url: string;
 }
 
-interface StarBackgroundProps {
+interface StarGenerateProps {
   songs: Song[];
 }
 
-const StarBackground: React.FC<StarBackgroundProps> = ({ songs }) => {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [selectedStar, setSelectedStar] = useState<{ x: number; y: number; size: number; img: HTMLImageElement; song: Song } | null>(null);
-  const [relatedStars, setRelatedStars] = useState<{ x: number; y: number; size: number; img: HTMLImageElement; song: Song }[]>([]);
+const StarGenerate: React.FC<StarGenerateProps> = ({ songs }) => {
+  const mountRef = useRef<HTMLDivElement | null>(null);
+  const [selectedStar, setSelectedStar] = useState<THREE.Mesh | null>(null);
+  const [relatedStars, setRelatedStars] = useState<THREE.Mesh[]>([]);
+  const [songDetails, setSongDetails] = useState<Song | null>(null);
 
   useEffect(() => {
-    if (!canvasRef.current) return;
+    if (!mountRef.current) return;
 
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 3000);
+    camera.position.set(0, 0, 1200);
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    mountRef.current.appendChild(renderer.domElement);
 
-    const Stars: { x: number; y: number; size: number; img: HTMLImageElement; song: Song }[] = [];
-    const StarSize = 100;
-    const padding = 20;
-    const maxAttempts = 1000;
+    const textureLoader = new THREE.TextureLoader();
+    const stars: THREE.Mesh[] = [];
+    const starSize = 100;
+    const relatedStarSize = 80;
+    const radius = 500;
 
-    const isOverlapping = (x: number, y: number, size: number) => {
-      return [...Stars, ...relatedStars].some(Star => {
-        const dx = Star.x - x;
-        const dy = Star.y - y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        return distance < Star.size / 2 + size / 2 + padding;
-      });
-    };
-
-    const drawStars = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      if (selectedStar) {
-        const { img } = selectedStar;
-        const newSize = 300;
-
-        gsap.to(selectedStar, {
-          duration: 1,
-          x: canvas.width / 2,
-          y: canvas.height / 2,
-          size: newSize,
-          onUpdate: () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(selectedStar.x, selectedStar.y, selectedStar.size / 2, 0, Math.PI * 2);
-            ctx.closePath();
-            ctx.clip();
-            ctx.drawImage(img, selectedStar.x - selectedStar.size / 2, selectedStar.y - selectedStar.size / 2, selectedStar.size, selectedStar.size);
-            ctx.restore();
-
-            relatedStars.forEach(Star => {
-              ctx.save();
-              ctx.beginPath();
-              ctx.arc(Star.x, Star.y, Star.size / 2, 0, Math.PI * 2);
-              ctx.closePath();
-              ctx.clip();
-              ctx.drawImage(Star.img, Star.x - Star.size / 2, Star.y - Star.size / 2, Star.size, Star.size);
-              ctx.restore();
-            });
-          }
-        });
-      } else {
-        Stars.forEach(Star => {
-          ctx.save();
-          ctx.beginPath();
-          ctx.arc(Star.x, Star.y, Star.size / 2, 0, Math.PI * 2);
-          ctx.closePath();
-          ctx.clip();
-          ctx.drawImage(Star.img, Star.x - Star.size / 2, Star.y - Star.size / 2, Star.size, Star.size);
-          ctx.restore();
-        });
-      }
-    };
-
-    const fetchRelatedSongs = async (song: Song) => {
-      try {
-        const response = await fetch('/api/related_songs', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ videoId: song.videoId })
-        });
-        const relatedSongs: Song[] = await response.json();
-
-        const relatedStarsData = relatedSongs.map((relatedSong) => {
-          const img = new Image();
-          img.src = relatedSong.thumbnail;
-
-          let attempts = 0;
-          let x, y;
-          do {
-            x = Math.random() * (canvas.width - 80) + 40;
-            y = Math.random() * (canvas.height - 80) + 40;
-            attempts++;
-          } while (isOverlapping(x, y, 80) && attempts < maxAttempts);
-
-          return { img, size: 80, x, y, song: relatedSong };
-        });
-
-        setRelatedStars(relatedStarsData);
-      } catch (error) {
-        console.error('Error fetching related songs:', error);
-      }
-    };
-
-    songs.forEach((song) => {
-      const img = new Image();
-      img.src = song.thumbnail;
-
-      img.onload = () => {
+    const addStars = (songsList: Song[], size: number) => {
+      const exclusionRadius = 150; // 他の星と重ならないようにする半径
+      const maxAttempts = 100; // 配置を試行する最大回数
+    
+      songsList.forEach((song) => {
+        const texture = textureLoader.load(song.thumbnail);
+        const geometry = new THREE.PlaneGeometry(size, size);
+        const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
+    
+        let posX, posY, posZ;
+        let tooClose = true;
         let attempts = 0;
-        let x, y;
-
-        do {
-          x = Math.random() * (canvas.width - StarSize) + StarSize / 2;
-          y = Math.random() * (canvas.height - StarSize) + StarSize / 2;
+    
+        while (tooClose && attempts < maxAttempts) {
+          posX = (Math.random() - 0.5) * 2000;
+          posY = (Math.random() - 0.5) * 2000;
+          posZ = (Math.random() - 0.5) * 2000;
+          tooClose = false;
+    
+          for (const otherStar of stars) {
+            const dx = posX - otherStar.position.x;
+            const dy = posY - otherStar.position.y;
+            const dz = posZ - otherStar.position.z;
+            const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    
+            if (distance < exclusionRadius) {
+              tooClose = true;
+              break;
+            }
+          }
           attempts++;
-        } while (isOverlapping(x, y, StarSize) && attempts < maxAttempts);
-
-        if (attempts < maxAttempts) {
-          const Star = { x, y, size: StarSize, img, song };
-          Stars.push(Star);
-          drawStars();
         }
-      };
-    });
-
-    const handleClick = (event: MouseEvent) => {
-      if (!ctx) return;
-
-      const rect = canvas.getBoundingClientRect();
-      const mouseX = event.clientX - rect.left;
-      const mouseY = event.clientY - rect.top;
-
-      const allStars = [...Stars, ...relatedStars];
-
-      const clickedStar = allStars.find(Star => {
-        const dx = mouseX - Star.x;
-        const dy = mouseY - Star.y;
-        return Math.sqrt(dx * dx + dy * dy) <= Star.size / 2;
+    
+        if (attempts < maxAttempts) { // 無限ループを防ぐための安全策
+          const star = new THREE.Mesh(geometry, material);
+          star.position.set(posX!, posY!, posZ!);
+          star.userData = { song };
+    
+          stars.push(star);
+          scene.add(star);
+        }
       });
+    };
+    
+    
 
-      if (clickedStar) {
-        setSelectedStar(clickedStar);
-        fetchRelatedSongs(clickedStar.song);
+    addStars(songs, starSize);
+
+    const animate = () => {
+      requestAnimationFrame(animate);
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    const handleClick = async (event: MouseEvent) => {
+      const mouse = new THREE.Vector2(
+        (event.clientX / window.innerWidth) * 2 - 1,
+        -(event.clientY / window.innerHeight) * 2 + 1
+      );
+
+      const raycaster = new THREE.Raycaster();
+      raycaster.setFromCamera(mouse, camera);
+
+      const intersects = raycaster.intersectObjects([...stars, ...relatedStars]);
+
+      if (intersects.length > 0) {
+        const clickedStar = intersects[0].object as THREE.Mesh;
+        const clickedSong = clickedStar.userData.song as Song;
+
+        if (selectedStar !== clickedStar) {
+
+          if (selectedStar) {
+            gsap.to(selectedStar.position, {
+              x: (Math.random() - 0.5) * 2000,
+              y: (Math.random() - 0.5) * 2000,
+              z: (Math.random() - 0.5) * 2000,
+              duration: 1.5,
+              ease: 'power3.out'
+            });
+            gsap.to(selectedStar.scale, { x: 1, y: 1, z: 1, duration: 1 });
+            gsap.to((selectedStar.material as THREE.MeshBasicMaterial), { opacity: 1, duration: 1 });
+
+            relatedStars.forEach(star => scene.remove(star));
+            setRelatedStars([]);
+          }
+
+          setSelectedStar(clickedStar);
+          setSongDetails(clickedSong);
+
+          gsap.to(clickedStar.position, { x: 0, y: 0, z: 0, duration: 1.5, ease: 'power3.out' });
+          gsap.to(clickedStar.scale, { x: 5, y: 5, z: 5, duration: 1 });
+
+          gsap.to(
+            stars
+              .filter(star => star !== clickedStar && !relatedStars.includes(star))
+              .map(star => (star.material as THREE.MeshBasicMaterial)),
+            {
+              opacity: 0,
+              duration: 1
+            }
+          );
+
+          try {
+            const response = await fetch('/api/related_songs', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ videoId: clickedSong.videoId })
+            });
+            const relatedSongs: Song[] = await response.json();
+
+            const newRelatedStars: THREE.Mesh[] = [];
+            relatedSongs.forEach((relatedSong, index) => {
+              const texture = textureLoader.load(relatedSong.thumbnail);
+              const geometry = new THREE.PlaneGeometry(relatedStarSize, relatedStarSize);
+              const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
+            
+              const exclusionRadius = 170; // 星同士の最小距離
+              const scale = 1; // スケール値 (必要なら調整)
+              const minX = -1000;
+              const maxX = 1000;
+              const minY = -1000;
+              const maxY = 1000;
+            
+              let posX: number;
+              let posY: number;
+            
+              do {
+                posX = Math.random() * (maxX - minX) + minX;
+                posY = Math.random() * (maxY - minY) + minY;
+            
+                if (index !== 1) {  // 特定の sessionId (index) が 1 でない場合、中心付近を避ける
+                  while (posX > -100 && posX < 100 && posY > -100 && posY < 100) {
+                    posX = Math.random() * (maxX - minX) + minX;
+                    posY = Math.random() * (maxY - minY) + minY;
+                  }
+                }
+              } while (
+                stars.some((otherStar) => {
+                  const dx = posX - otherStar.position.x;
+                  const dy = posY - otherStar.position.y;
+                  const distance = Math.sqrt(dx * dx + dy * dy);
+                  return distance < exclusionRadius;
+                })
+              );
+            
+              const star = new THREE.Mesh(geometry, material);
+              star.position.set(posX, posY, 0);
+              star.userData = { song: relatedSong };
+            
+              stars.push(star);
+              newRelatedStars.push(star);
+              scene.add(star);
+            });
+            
+
+            setRelatedStars(newRelatedStars);
+          } catch (error) {
+            console.error('関連曲の取得エラー:', error);
+          }
+        }
       }
     };
 
@@ -167,10 +205,16 @@ const StarBackground: React.FC<StarBackgroundProps> = ({ songs }) => {
 
     return () => {
       window.removeEventListener('click', handleClick);
+      mountRef.current?.removeChild(renderer.domElement);
     };
-  }, [songs, selectedStar, relatedStars]);
+  }, [songs]);
 
-  return <canvas ref={canvasRef} style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%' }} />;
+  return (
+    <div>
+      <div ref={mountRef} style={{ width: '100%', height: '100%' }} />
+      {songDetails && <SongDetails song={songDetails} />} {/* SongDetails を表示 */}
+    </div>
+  );
 };
 
-export default StarBackground;
+export default StarGenerate;
