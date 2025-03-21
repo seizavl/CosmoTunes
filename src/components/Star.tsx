@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { gsap } from 'gsap';
 import SongDetails from './SongDetails';  // 新しく作成したコンポーネントをインポート
+import Sound from './Sound';
 
 interface Song {
   title: string;
@@ -126,19 +127,33 @@ const StarGenerate: React.FC<StarGenerateProps> = ({ songs }) => {
 
           setSelectedStar(clickedStar);
           setSongDetails(clickedSong);
+          const starsToRemove = stars.filter(star => star !== clickedStar && !relatedStars.includes(star));
 
           gsap.to(clickedStar.position, { x: 0, y: 0, z: 0, duration: 1.5, ease: 'power3.out' });
           gsap.to(clickedStar.scale, { x: 5, y: 5, z: 5, duration: 1 });
 
-          gsap.to(
-            stars
-              .filter(star => star !== clickedStar && !relatedStars.includes(star))
-              .map(star => (star.material as THREE.MeshBasicMaterial)),
-            {
+          starsToRemove.forEach(star => {
+            gsap.to(star.material as THREE.MeshBasicMaterial, {
               opacity: 0,
-              duration: 1
-            }
-          );
+              duration: 1,
+              onComplete: () => {
+                // シーンから星を削除
+                scene.remove(star);
+          
+                // リソース解放
+                if (star.geometry) star.geometry.dispose();
+                if (Array.isArray(star.material)) {
+                  star.material.forEach(m => m.dispose());
+                } else {
+                  star.material.dispose();
+                }
+          
+                // stars配列から削除
+                const index = stars.indexOf(star);
+                if (index > -1) stars.splice(index, 1);
+              },
+            });
+          });
 
           try {
             const response = await fetch('/api/related_songs', {
@@ -211,6 +226,7 @@ const StarGenerate: React.FC<StarGenerateProps> = ({ songs }) => {
     <div>
       <div ref={mountRef} style={{ width: '100%', height: '100%' }} />
       {songDetails && <SongDetails song={songDetails} />} {/* SongDetails を表示 */}
+      {songDetails && <Sound videoId={songDetails.videoId} />} {/* SongDetails を表示 */}
     </div>
   );
 };
