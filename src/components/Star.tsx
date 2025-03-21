@@ -44,7 +44,7 @@ const StarGenerate: React.FC<StarGenerateProps> = ({ songs }) => {
     
       songsList.forEach((song) => {
         const texture = textureLoader.load(song.thumbnail);
-        const geometry = new THREE.PlaneGeometry(size, size);
+        const geometry = new THREE.CircleGeometry(size / 2, 64);
         const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
     
         let posX, posY, posZ;
@@ -151,10 +151,10 @@ const StarGenerate: React.FC<StarGenerateProps> = ({ songs }) => {
             const newRelatedStars: THREE.Mesh[] = [];
             relatedSongs.forEach((relatedSong, index) => {
               const texture = textureLoader.load(relatedSong.thumbnail);
-              const geometry = new THREE.PlaneGeometry(relatedStarSize, relatedStarSize);
+              const geometry = new THREE.CircleGeometry(100 / 2, 64);
               const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
             
-              const exclusionRadius = 170; // 星同士の最小距離
+              const exclusionRadius = 200; // 星同士の最小距離
               const scale = 1; // スケール値 (必要なら調整)
               const minX = -1000;
               const maxX = 1000;
@@ -168,11 +168,9 @@ const StarGenerate: React.FC<StarGenerateProps> = ({ songs }) => {
                 posX = Math.random() * (maxX - minX) + minX;
                 posY = Math.random() * (maxY - minY) + minY;
             
-                if (index !== 1) {  // 特定の sessionId (index) が 1 でない場合、中心付近を避ける
-                  while (posX > -100 && posX < 100 && posY > -100 && posY < 100) {
-                    posX = Math.random() * (maxX - minX) + minX;
-                    posY = Math.random() * (maxY - minY) + minY;
-                  }
+                while (posX > -400 && posX < 400 && posY > -400 && posY < 400) {
+                  posX = Math.random() * (maxX - minX) + minX;
+                  posY = Math.random() * (maxY - minY) + minY;
                 }
               } while (
                 stars.some((otherStar) => {
