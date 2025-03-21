@@ -3,6 +3,9 @@ import * as THREE from 'three';
 import { gsap } from 'gsap';
 import SongDetails from './SongDetails';  // 新しく作成したコンポーネントをインポート
 import Sound from './Sound';
+import AudioVisualizer from './AudioVisualizer';
+import { AnimatePresence, motion } from 'framer-motion';
+
 
 interface Song {
   title: string;
@@ -45,8 +48,8 @@ const StarGenerate: React.FC<StarGenerateProps> = ({ songs }) => {
     
       songsList.forEach((song) => {
         const texture = textureLoader.load(song.thumbnail);
-        const geometry = new THREE.CircleGeometry(size / 2, 64);
-        const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
+        const geometry = new THREE.CircleGeometry(150 / 2, 64);
+        const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true, opacity: 0 });  // 透明度を0に設定
     
         let posX, posY, posZ;
         let tooClose = true;
@@ -55,7 +58,7 @@ const StarGenerate: React.FC<StarGenerateProps> = ({ songs }) => {
         while (tooClose && attempts < maxAttempts) {
           posX = (Math.random() - 0.5) * 2000;
           posY = (Math.random() - 0.5) * 2000;
-          posZ = (Math.random() - 0.5) * 2000;
+          posZ = (Math.random() - 0.5) * 1000;
           tooClose = false;
     
           for (const otherStar of stars) {
@@ -79,10 +82,12 @@ const StarGenerate: React.FC<StarGenerateProps> = ({ songs }) => {
     
           stars.push(star);
           scene.add(star);
+    
+          // ⭐️ gsapでフェードインアニメーションを追加
+          gsap.to(star.material, { opacity: 1, duration: 1.5, ease: 'power3.out' });
         }
       });
     };
-    
     
 
     addStars(songs, starSize);
@@ -114,7 +119,7 @@ const StarGenerate: React.FC<StarGenerateProps> = ({ songs }) => {
             gsap.to(selectedStar.position, {
               x: (Math.random() - 0.5) * 2000,
               y: (Math.random() - 0.5) * 2000,
-              z: (Math.random() - 0.5) * 2000,
+              z: (Math.random() - 0.5) * 1000,
               duration: 1.5,
               ease: 'power3.out'
             });
@@ -130,7 +135,7 @@ const StarGenerate: React.FC<StarGenerateProps> = ({ songs }) => {
           const starsToRemove = stars.filter(star => star !== clickedStar && !relatedStars.includes(star));
 
           gsap.to(clickedStar.position, { x: 0, y: 0, z: 0, duration: 1.5, ease: 'power3.out' });
-          gsap.to(clickedStar.scale, { x: 5, y: 5, z: 5, duration: 1 });
+          gsap.to(clickedStar.scale, { x: 3.5, y: 3.5, z: 3.5, duration: 1 });
 
           starsToRemove.forEach(star => {
             gsap.to(star.material as THREE.MeshBasicMaterial, {
@@ -166,15 +171,14 @@ const StarGenerate: React.FC<StarGenerateProps> = ({ songs }) => {
             const newRelatedStars: THREE.Mesh[] = [];
             relatedSongs.forEach((relatedSong, index) => {
               const texture = textureLoader.load(relatedSong.thumbnail);
-              const geometry = new THREE.CircleGeometry(100 / 2, 64);
-              const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
+              const geometry = new THREE.CircleGeometry(150 / 2, 64);
+              const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true, opacity: 0 });  // 最初は透明に設定
             
               const exclusionRadius = 200; // 星同士の最小距離
-              const scale = 1; // スケール値 (必要なら調整)
-              const minX = -1000;
-              const maxX = 1000;
-              const minY = -1000;
-              const maxY = 1000;
+              const minX = -1500;
+              const maxX = 1500;
+              const minY = -1500;
+              const maxY = 1500;
             
               let posX: number;
               let posY: number;
@@ -203,7 +207,11 @@ const StarGenerate: React.FC<StarGenerateProps> = ({ songs }) => {
               stars.push(star);
               newRelatedStars.push(star);
               scene.add(star);
+            
+              // ⭐️ gsapを使ってフェードインさせる
+              gsap.to(star.material, { opacity: 1, duration: 1.5, ease: 'power3.out' });
             });
+            
             
 
             setRelatedStars(newRelatedStars);
@@ -224,9 +232,22 @@ const StarGenerate: React.FC<StarGenerateProps> = ({ songs }) => {
 
   return (
     <div>
-      <div ref={mountRef} style={{ width: '100%', height: '100%' }} />
+      <div ref={mountRef} style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 9999 }} />
       {songDetails && <SongDetails song={songDetails} />} {/* SongDetails を表示 */}
       {songDetails && <Sound videoId={songDetails.videoId} />} {/* SongDetails を表示 */}
+      <AnimatePresence mode="wait">
+      {songDetails && (
+        <motion.div
+          key="audio-visualizer"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5 }}  // フェードイン・アウトの速度
+        >
+          <AudioVisualizer />
+        </motion.div>
+      )}
+    </AnimatePresence>
     </div>
   );
 };

@@ -9,7 +9,7 @@ export async function GET() {
     await ytmusic.initialize();
     const searchResults = await ytmusic.searchSongs("J-Pop Hits");
     console.log(searchResults)
-    const songs = searchResults.slice(0, 10).map(song => ({
+    const songs = searchResults.slice(0, 20).map(song => ({
 
       title: song.name,
       artist: song.artist.name,

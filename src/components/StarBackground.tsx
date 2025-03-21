@@ -1,10 +1,35 @@
-import React, { ReactNode, useEffect } from "react";
-import { Canvas } from "@react-three/fiber";
-import { Stars } from "@react-three/drei";
+import React, { ReactNode, useEffect, useRef } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { Stars, OrbitControls } from "@react-three/drei";
+import * as THREE from "three";
+import { EffectComposer, Bloom, Noise } from "@react-three/postprocessing";
 
 interface StarBackgroundProps {
   children: ReactNode;
 }
+
+const ShootingStar: React.FC = () => {
+  const ref = useRef<THREE.Mesh>(null!);
+
+  useFrame(() => {
+    if (ref.current) {
+      ref.current.position.x -= 0.5;
+      ref.current.position.y -= 0.2;
+      if (ref.current.position.x < -100 || ref.current.position.y < -100) {
+        ref.current.position.set(Math.random() * 200 - 100, Math.random() * 100 - 50, Math.random() * -50);
+      }
+    }
+  });
+
+  return (
+    <mesh ref={ref} position={[Math.random() * 200 - 100, Math.random() * 100 - 50, Math.random() * -50]}>
+      <sphereGeometry args={[0.1, 16, 16]} />
+      <meshBasicMaterial color="#fff" />
+    </mesh>
+  );
+};
+
+
 
 const StarBackground: React.FC<StarBackgroundProps> = ({ children }) => {
   useEffect(() => {
@@ -25,21 +50,24 @@ const StarBackground: React.FC<StarBackgroundProps> = ({ children }) => {
           height: "100%",
           zIndex: -1,
         }}
+        camera={{ position: [0, 0, 1] }}
       >
-        <color attach="background" args={["#000"]} />
-        <Stars
-          radius={100}
-          depth={50}
-          count={7000}
-          factor={4}
-          saturation={0}
-          fade
-          speed={0.5}
-        />
+        <color attach="background" args={["#000000"]} />
+
+        {/* 星 */}
+        <Stars radius={150} depth={60} count={10000} factor={5} saturation={0} fade speed={0.5} />
+
+        {/* ポストプロセッシングエフェクト */}
+        <EffectComposer>
+          <Bloom intensity={1.5} luminanceThreshold={0.1} luminanceSmoothing={0.9} />
+          <Noise opacity={0.02} />
+        </EffectComposer>
+
+        {/* 視点を動かすためのコントロール */}
+        <OrbitControls enableZoom={false} enablePan={false} />
       </Canvas>
-      <div style={{ position: "relative", zIndex: 0 }}>
-        {children}
-      </div>
+
+      <div style={{ position: "relative", zIndex: 0 }}>{children}</div>
     </>
   );
 };
