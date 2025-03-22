@@ -17,15 +17,15 @@ const SongDetails: React.FC<SongDetailsProps> = ({ song }) => {
     <div style={{
       fontSize: '0.7rem',
       position: 'absolute',
-      top: '86%', // コレがちょうどいい位置
+      top: '73%', // コレがちょうどいい位置
       left: '50%',
       transform: 'translate(-50%, -50%)', // 完全に中央に配置
-      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+      // backgroundColor: 'rgba(0, 0, 0, 0.8)',
       padding: '10px',
       borderRadius: '12px',
       color: 'white',
       fontFamily: 'Arial',
-      boxShadow: '0px 0px 10px rgba(255, 255, 255, 0.5)',
+      // boxShadow: '0px 0px 10px rgba(255, 255, 255, 0.5)',
       textAlign: 'center' // 中央揃え
     }}>
       <h2 style={{
