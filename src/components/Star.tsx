@@ -7,7 +7,6 @@ import AudioVisualizer from './AudioVisualizer';
 import { AnimatePresence, motion } from 'framer-motion';
 import GlassmorphismSearchBar from './Searchbar';
 
-
 interface Song {
   title: string;
   artist: string;
@@ -19,6 +18,7 @@ interface Song {
 interface StarGenerateProps {
   songs: Song[];
 }
+
 interface SearchResult {
   title: string;
   artist: string;
@@ -37,7 +37,7 @@ const StarGenerate: React.FC<StarGenerateProps> = ({ songs }) => {
   useEffect(() => {
     if (!mountRef.current) return;
     if (searchResults.length > 0) {
-      songs = searchResults
+      songs = searchResults;
       setSongDetails(null);
     }
     const scene = new THREE.Scene();
@@ -98,7 +98,6 @@ const StarGenerate: React.FC<StarGenerateProps> = ({ songs }) => {
         }
       });
     };
-    
 
     addStars(songs, starSize);
 
@@ -221,8 +220,6 @@ const StarGenerate: React.FC<StarGenerateProps> = ({ songs }) => {
               // ⭐️ gsapを使ってフェードインさせる
               gsap.to(star.material, { opacity: 1, duration: 1.5, ease: 'power3.out' });
             });
-            
-            
 
             setRelatedStars(newRelatedStars);
           } catch (error) {
@@ -232,40 +229,52 @@ const StarGenerate: React.FC<StarGenerateProps> = ({ songs }) => {
       }
     };
 
-
-
     window.addEventListener('click', handleClick);
 
     return () => {
       window.removeEventListener('click', handleClick);
       mountRef.current?.removeChild(renderer.domElement);
     };
-  }, [songs,searchResults]);
+  }, [songs, searchResults]);
+
   const searchSongs = (results: SearchResult[]) => {
     setSearchResults(results);
     console.log("検索結果: ", results);
-};
+  };
+
   return (
     <div>
-      
       <div ref={mountRef} style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: "1000" }} />
 
       {songDetails && <SongDetails videoId={songDetails.videoId} />} {/* SongDetails を表示 */}
       {songDetails && <Sound videoId={songDetails.videoId} />} {/* SongDetails を表示 */}
       <AnimatePresence mode="wait">
-      {songDetails && (
-        <motion.div
-          key="audio-visualizer"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.5 }}  // フェードイン・アウトの速度
-        >
-          <AudioVisualizer />
-        </motion.div>
-      )}
-    </AnimatePresence>
-    <GlassmorphismSearchBar onSearch={searchSongs}/> {/* 検索時にhandleSearchを呼び出す */}
+        {songDetails && (
+          <motion.div
+            key="audio-visualizer"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}  // フェードイン・アウトの速度
+          >
+            <AudioVisualizer />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 検索バーを中央に配置する親コンテナ */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        height: '30vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 10000
+      }}>
+        <GlassmorphismSearchBar onSearch={searchSongs} />
+      </div>
     </div>
   );
 };

@@ -68,15 +68,17 @@ const GlassmorphismSearchBar: React.FC<GlassmorphismSearchBarProps> = ({ onSearc
             <motion.div
                 whileHover={{ scale: 1.02 }}
                 style={{
-                    position: 'relative',
+                    position: 'fixed',
+                    left: '35%',
                     width: '384px',
-                    padding: '8px',
-                    borderRadius: '16px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                    backdropFilter: 'blur(15px)',
-                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-                    marginBottom: '16px',
-                    border: '1px solid rgba(255, 255, 255, 0.2)'
+                    background: 'rgba(255, 255, 255, 0.1)', 
+                    backdropFilter: 'blur(5px)', 
+                    WebkitBackdropFilter: 'blur(5px)',
+                    borderRadius: '12px',
+                    borderTop: '1px solid rgba(255, 255, 255, 0.4)',
+                    borderRight: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderLeft: '1px solid rgba(255, 255, 255, 0.4)',
                 }}
             >
                 <input
@@ -102,7 +104,10 @@ const GlassmorphismSearchBar: React.FC<GlassmorphismSearchBarProps> = ({ onSearc
                     right: '16px',
                     transform: 'translateY(-50%)',
                 }}>
-                    <Search color="white" />
+                    <Search color="white" style={{
+                        marginTop: '5px',
+                        marginRight: '-6px',
+                    }} />
                 </div>
             </motion.div>
         </motion.div>
