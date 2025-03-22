@@ -233,7 +233,7 @@ const StarGenerate: React.FC<StarGenerateProps> = ({ songs }) => {
   return (
     <div>
       <div ref={mountRef} style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 9999 }} />
-      {songDetails && <SongDetails song={songDetails} />} {/* SongDetails を表示 */}
+      {songDetails && <SongDetails videoId={songDetails.videoId} />} {/* SongDetails を表示 */}
       {songDetails && <Sound videoId={songDetails.videoId} />} {/* SongDetails を表示 */}
       <AnimatePresence mode="wait">
       {songDetails && (
