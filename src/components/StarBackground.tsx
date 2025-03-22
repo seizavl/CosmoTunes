@@ -62,9 +62,6 @@ const StarBackground: React.FC<StarBackgroundProps> = ({ children }) => {
           <Bloom intensity={1.5} luminanceThreshold={0.1} luminanceSmoothing={0.9} />
           <Noise opacity={0.02} />
         </EffectComposer>
-
-        {/* 視点を動かすためのコントロール */}
-        <OrbitControls enableZoom={false} enablePan={false} />
       </Canvas>
 
       <div style={{ position: "relative", zIndex: 0 }}>{children}</div>

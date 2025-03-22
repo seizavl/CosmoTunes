@@ -22,6 +22,7 @@ export async function POST(req: NextRequest) {
       thumbnail: songInfo.thumbnails[0]?.url,
       url,
       videoId: songInfo.videoId,
+      duration: songInfo.duration,
     });
   } catch (error) {
     return NextResponse.json({ error: '曲の取得に失敗しました', details: error }, { status: 500 });
