@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Youtube } from 'lucide-react';  // これを追加
 
 interface Song {
   title: string;
@@ -6,6 +7,7 @@ interface Song {
   videoId: string;
   thumbnail: string;
   url: string;
+  duration: number;
 }
 
 interface SongDetailsProps {
@@ -13,31 +15,93 @@ interface SongDetailsProps {
 }
 
 const SongDetails: React.FC<SongDetailsProps> = ({ videoId }) => {
-    const [song, setSong] = useState<Song | null>(null);
+  const [song, setSong] = useState<Song | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startTime, setStartTime] = useState<number>(0);
+  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
   
-    useEffect(() => {
-      const fetchSong = async () => {
-        const res = await fetch('/api/getSong', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ videoId }),
-        });
-  
-        if (res.ok) {
-          const data = await res.json();
-          setSong(data);
-        } else {
-          console.error("曲情報の取得に失敗しました");
+  useEffect(() => {
+    const fetchSong = async () => {
+      const res = await fetch('/api/getSong', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ videoId }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setSong(data);
+        setProgress(0);
+        setStartTime(Date.now());
+
+        if (intervalId) clearInterval(intervalId);
+
+        const id = setInterval(() => {
+          if (!isDragging) {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            if (elapsed <= data.duration) {
+              setProgress(elapsed);
+            } else {
+              clearInterval(id);
+            }
+          }
+        }, 1000);
+
+        setIntervalId(id);
+      } else {
+        console.error("曲情報の取得に失敗しました");
+      }
+    };
+    fetchSong();
+
+    return () => {
+          if (intervalId) clearInterval(intervalId);
+        };
+      }, [videoId]);
+    
+      useEffect(() => {
+        if (!isDragging && song) {
+          if (intervalId) clearInterval(intervalId);
+    
+          const id = setInterval(() => {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            if (elapsed <= song.duration) {
+              setProgress(elapsed);
+            } else {
+              clearInterval(id);
+            }
+          }, 1000);
+    
+          setIntervalId(id);
+          return () => clearInterval(id);
         }
-      };
-      fetchSong();
-    }, [videoId]);
+      }, [isDragging, startTime, song]);
+  const handleProgressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newProgress = parseInt(e.target.value);
+    setProgress(newProgress);
+    setStartTime(Date.now() - newProgress * 1000);
+  };
+
+  const handleMouseDown = () => {
+    setIsDragging(true);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+  };
   
   return (
       <div style={{
         fontSize: '0.6rem',
         position: 'fixed',
-        top: '77%',
+        top: '80%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
         color: '#fff',
@@ -60,13 +124,37 @@ const SongDetails: React.FC<SongDetailsProps> = ({ videoId }) => {
         <>
           <h2 style={{ margin: '0', fontWeight: 'bold' }}>{song.title}</h2>
           <p style={{ margin: '5px 0' }}>by {song.artist}</p>
+          <div style={{ marginBottom: '10px' }}>
+          <input
+            type="range"
+            min="0"
+            max={song.duration}
+            value={progress}
+            onChange={handleProgressChange}
+            onMouseDown={handleMouseDown}
+            onMouseUp={handleMouseUp}
+            style={{
+              width: '100%',
+              appearance: 'none',
+              height: '6px',
+              background: `linear-gradient(90deg, #ffffff ${(progress / song.duration) * 100}%, #555 0%)`,
+              outline: 'none',
+              borderRadius: '3px',
+              cursor: 'pointer'
+            }}
+          />
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px', fontSize: '0.8rem' }}>
+            <span>{formatTime(progress)}</span>
+            <span>{formatTime(song.duration)}</span>
+          </div>
+        </div>
           <a 
             href={`https://www.youtube.com/watch?v=${song.videoId}`} 
             target="_blank" 
             rel="noopener noreferrer" 
             style={{ color: '#ffcc00', textDecoration: 'none', fontWeight: 'bold' }}
           >
-            Watch on YouTube
+            <Youtube size={24} />
           </a>
         </>
       ) : (
