@@ -110,7 +110,7 @@ const SongDetails: React.FC<SongDetailsProps> = ({ videoId }) => {
         zIndex: 10000,
 
         // グラスモーフィズムのデザイン
-        padding: '15px 30px',
+        padding: '15px 30px 10px 30px',
         background: 'rgba(255, 255, 255, 0.1)', 
         backdropFilter: 'blur(5px)', 
         WebkitBackdropFilter: 'blur(5px)',
@@ -133,16 +133,38 @@ const SongDetails: React.FC<SongDetailsProps> = ({ videoId }) => {
             onChange={handleProgressChange}
             onMouseDown={handleMouseDown}
             onMouseUp={handleMouseUp}
-            style={{
+              style={{
+              marginTop: '10px',
               width: '100%',
               appearance: 'none',
               height: '6px',
-              background: `linear-gradient(90deg, #ffffff ${(progress / song.duration) * 100}%, #555 0%)`,
+              background: `linear-gradient(90deg, #999 ${(progress / song.duration) * 100}%, #555 0%)`,
               outline: 'none',
               borderRadius: '3px',
-              cursor: 'pointer'
+              cursor: 'pointer',
             }}
           />
+          <style>
+            {`
+              input[type="range"]::-webkit-slider-thumb {
+                appearance: none;
+                width: 12px;
+                height: 12px;
+                background: #fff; /* ← 丸を赤くする */
+                border-radius: 50%;
+                cursor: pointer;
+              }
+
+              input[type="range"]::-moz-range-thumb {
+                width: 12px;
+                height: 12px;
+                background: fff; /* ← 丸を赤くする */
+                border-radius: 50%;
+                cursor: pointer;
+              }
+            `}
+          </style>
+
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px', fontSize: '0.8rem' }}>
             <span>{formatTime(progress)}</span>
             <span>{formatTime(song.duration)}</span>
@@ -154,7 +176,7 @@ const SongDetails: React.FC<SongDetailsProps> = ({ videoId }) => {
             rel="noopener noreferrer" 
             style={{ color: '#ffcc00', textDecoration: 'none', fontWeight: 'bold' }}
           >
-            <Youtube size={24} />
+            <Youtube size={24} style={{ marginTop:-10 }} />
           </a>
         </>
       ) : (

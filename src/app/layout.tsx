@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Image from "next/image";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,8 +26,13 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body
+      
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <Image src="/cosmotunes-logo.png" alt="Cosmotunes Logo" width={250} height={200} style={{
+          marginTop: "-65px",
+          textShadow: "10px 10px 10px rgba(255, 255, 255, 1)",
+        }} />
         {children}
       </body>
     </html>
