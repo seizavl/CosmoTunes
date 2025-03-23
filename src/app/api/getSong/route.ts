@@ -1,6 +1,8 @@
-"use client"
+
 import { NextRequest, NextResponse } from 'next/server';
 import YTMusic from 'ytmusic-api';
+
+export const revalidate = 0; // API のキャッシュを無効化する設定
 
 export async function POST(req: NextRequest) {
   const { videoId } = await req.json();
@@ -26,6 +28,7 @@ export async function POST(req: NextRequest) {
       duration: songInfo.duration,
     });
   } catch (error) {
-    return NextResponse.json({ error: '曲の取得に失敗しました', details: error }, { status: 500 });
+    console.error("Error fetching song:", error);
+    return NextResponse.json({ error: '曲の取得に失敗しました', details: error.message }, { status: 500 });
   }
 }

@@ -1,8 +1,10 @@
-"use client"
+
 import { NextResponse } from "next/server";
 import YTMusic from "ytmusic-api";
 
 const ytmusic = new YTMusic();
+
+export const revalidate = 0; // API のキャッシュを無効化する設定
 
 // POSTリクエストを処理（クエリに基づいて検索）
 export async function POST(request: Request) {
@@ -14,7 +16,7 @@ export async function POST(request: Request) {
 
     await ytmusic.initialize();
     const searchResults = await ytmusic.searchSongs(query);
-    console.log(searchResults)
+    console.log(searchResults);
     
     const songs = searchResults.slice(0, 20).map(song => ({
       title: song.name,

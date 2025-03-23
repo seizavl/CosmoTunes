@@ -1,17 +1,19 @@
-"use client"
+
 import { NextResponse } from "next/server";
 import YTMusic from "ytmusic-api";
 
 // 認証ファイルがあるなら指定する（ないなら無視してもOK）
 const ytmusic = new YTMusic();
 
+export const revalidate = 0; // API ルートのキャッシュを無効化する設定
+
 export async function GET() {
   try {
-    await ytmusic.initialize(); // 必要な場合、認証ファイルのパスを指定
+    await ytmusic.initialize();
 
     const searchResults = await ytmusic.searchSongs("J-Pop Hits");
 
-    console.log(searchResults); // サーバーサイドコンソールにログを表示
+    console.log(searchResults);
 
     const songs = searchResults.slice(0, 20).map(song => ({
       title: song.name,
