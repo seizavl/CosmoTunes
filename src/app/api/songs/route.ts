@@ -1,16 +1,18 @@
 import { NextResponse } from "next/server";
 import YTMusic from "ytmusic-api";
 
+// 認証ファイルがあるなら指定する（ないなら無視してもOK）
 const ytmusic = new YTMusic();
 
-// GETリクエストを処理（人気の曲を取得）
 export async function GET() {
   try {
-    await ytmusic.initialize();
-    const searchResults = await ytmusic.searchSongs("J-Pop Hits");
-    console.log(searchResults)
-    const songs = searchResults.slice(0, 20).map(song => ({
+    await ytmusic.initialize(); // 必要な場合、認証ファイルのパスを指定
 
+    const searchResults = await ytmusic.searchSongs("J-Pop Hits");
+
+    console.log(searchResults); // サーバーサイドコンソールにログを表示
+
+    const songs = searchResults.slice(0, 20).map(song => ({
       title: song.name,
       artist: song.artist.name,
       artistId: song.artist.artistId,
