@@ -1,9 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
 const PseudoAudioVisualizer: React.FC = () => {
   const mountRef = useRef<HTMLDivElement | null>(null);
-  const [isPlaying, setIsPlaying] = useState(true);
 
   useEffect(() => {
     let scene: THREE.Scene;
@@ -62,24 +61,21 @@ const PseudoAudioVisualizer: React.FC = () => {
 
     const animate = () => {
       animationId = requestAnimationFrame(animate);
+      const frequencyData = Array.from({ length: 256 }, () => Math.random());
 
-      if (isPlaying) {
-        const frequencyData = Array.from({ length: 256 }, () => Math.random());
+      let index = 0;
+      for (let i = 0; i < frequencyData.length; i++) {
+        const intensity = frequencyData[i];
+        const numVisibleDots = Math.floor(intensity * 30);
 
-        let index = 0;
-        for (let i = 0; i < frequencyData.length; i++) {
-          const intensity = frequencyData[i];
-          const numVisibleDots = Math.floor(intensity * 30);
-
-          for (let j = 0; j < 30; j++) {
-            const visibility = j < numVisibleDots ? 1 : 0;
-            instancedMesh.setColorAt(index, new THREE.Color(visibility, visibility, visibility));
-            index++;
-          }
+        for (let j = 0; j < 30; j++) {
+          const visibility = j < numVisibleDots ? 1 : 0;
+          instancedMesh.setColorAt(index, new THREE.Color(visibility, visibility, visibility));
+          index++;
         }
-
-        instancedMesh.instanceColor!.needsUpdate = true;
       }
+
+      instancedMesh.instanceColor!.needsUpdate = true;
       
       renderer.render(scene, camera);
     };
@@ -90,7 +86,7 @@ const PseudoAudioVisualizer: React.FC = () => {
       cancelAnimationFrame(animationId);
       if (renderer) mountRef.current?.removeChild(renderer.domElement);
     };
-  }, [isPlaying]);
+  }, []);
 
   return (
     <>

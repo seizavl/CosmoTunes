@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Youtube } from 'lucide-react';
 
 interface Song {
@@ -18,8 +18,9 @@ const SongDetails: React.FC<SongDetailsProps> = ({ videoId }) => {
   const [song, setSong] = useState<Song | null>(null);
   const [progress, setProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const [startTime, setStartTime] = useState<number>(0);
-  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
+  
+  const intervalIdRef = useRef<NodeJS.Timeout | null>(null);
+  const startTimeRef = useRef<number>(0);
 
   useEffect(() => {
     const fetchSong = async () => {
@@ -33,22 +34,20 @@ const SongDetails: React.FC<SongDetailsProps> = ({ videoId }) => {
         const data = await res.json();
         setSong(data);
         setProgress(0);
-        setStartTime(Date.now());
+        startTimeRef.current = Date.now();
 
-        if (intervalId) clearInterval(intervalId);
+        if (intervalIdRef.current) clearInterval(intervalIdRef.current);
 
-        const id = setInterval(() => {
+        intervalIdRef.current = setInterval(() => {
           if (!isDragging) {
-            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
             if (elapsed <= data.duration) {
               setProgress(elapsed);
             } else {
-              clearInterval(id);
+              clearInterval(intervalIdRef.current!);
             }
           }
         }, 1000);
-
-        setIntervalId(id);
       } else {
         console.error("曲情報の取得に失敗しました");
       }
@@ -56,32 +55,31 @@ const SongDetails: React.FC<SongDetailsProps> = ({ videoId }) => {
     fetchSong();
 
     return () => {
-      if (intervalId) clearInterval(intervalId);
+      if (intervalIdRef.current) clearInterval(intervalIdRef.current);
     };
-  }, [videoId]);
+  }, [videoId, isDragging]);
 
   useEffect(() => {
     if (!isDragging && song) {
-      if (intervalId) clearInterval(intervalId);
+      if (intervalIdRef.current) clearInterval(intervalIdRef.current);
 
-      const id = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      intervalIdRef.current = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
         if (elapsed <= song.duration) {
           setProgress(elapsed);
         } else {
-          clearInterval(id);
+          clearInterval(intervalIdRef.current!);
         }
       }, 1000);
 
-      setIntervalId(id);
-      return () => clearInterval(id);
+      return () => clearInterval(intervalIdRef.current!);
     }
-  }, [isDragging, startTime, song]);
+  }, [isDragging, song]);
 
   const handleProgressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newProgress = parseInt(e.target.value);
     setProgress(newProgress);
-    setStartTime(Date.now() - newProgress * 1000);
+    startTimeRef.current = Date.now() - newProgress * 1000;
   };
 
   const handleMouseDown = () => {
@@ -97,7 +95,7 @@ const SongDetails: React.FC<SongDetailsProps> = ({ videoId }) => {
     const secs = Math.floor(seconds % 60);
     return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
   };
-
+  
   return (
     <div style={{
       fontSize: '0.6rem',

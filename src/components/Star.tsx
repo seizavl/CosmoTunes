@@ -50,9 +50,8 @@ const StarGenerate: React.FC<StarGenerateProps> = ({ songs }) => {
 
     const textureLoader = new THREE.TextureLoader();
     const stars: THREE.Mesh[] = [];
-    const starSize = 100;
 
-    const addStars = (songsList: Song[], size: number) => {
+    const addStars = (songsList: Song[]) => {
       const exclusionRadius = 150; // 他の星と重ならないようにする半径
       const maxAttempts = 100; // 配置を試行する最大回数
     
@@ -99,7 +98,7 @@ const StarGenerate: React.FC<StarGenerateProps> = ({ songs }) => {
       });
     };
 
-    addStars(songs, starSize);
+    addStars(songs);
 
     const animate = () => {
       requestAnimationFrame(animate);
@@ -178,7 +177,7 @@ const StarGenerate: React.FC<StarGenerateProps> = ({ songs }) => {
             const relatedSongs: Song[] = await response.json();
 
             const newRelatedStars: THREE.Mesh[] = [];
-            relatedSongs.forEach((relatedSong, index) => {
+            relatedSongs.forEach((relatedSong) => {
               const texture = textureLoader.load(relatedSong.thumbnail);
               const geometry = new THREE.CircleGeometry(150 / 2, 64);
               const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true, opacity: 0 });  // 最初は透明に設定

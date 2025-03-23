@@ -1,34 +1,11 @@
-import React, { ReactNode, useEffect, useRef } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { Stars, OrbitControls } from "@react-three/drei";
-import * as THREE from "three";
+import React, { ReactNode, useEffect } from "react";
+import { Canvas } from "@react-three/fiber";
+import { Stars } from "@react-three/drei";
 import { EffectComposer, Bloom, Noise } from "@react-three/postprocessing";
 
 interface StarBackgroundProps {
   children: ReactNode;
 }
-
-const ShootingStar: React.FC = () => {
-  const ref = useRef<THREE.Mesh>(null!);
-
-  useFrame(() => {
-    if (ref.current) {
-      ref.current.position.x -= 0.5;
-      ref.current.position.y -= 0.2;
-      if (ref.current.position.x < -100 || ref.current.position.y < -100) {
-        ref.current.position.set(Math.random() * 200 - 100, Math.random() * 100 - 50, Math.random() * -50);
-      }
-    }
-  });
-
-  return (
-    <mesh ref={ref} position={[Math.random() * 200 - 100, Math.random() * 100 - 50, Math.random() * -50]}>
-      <sphereGeometry args={[0.1, 16, 16]} />
-      <meshBasicMaterial color="#fff" />
-    </mesh>
-  );
-};
-
 
 
 const StarBackground: React.FC<StarBackgroundProps> = ({ children }) => {

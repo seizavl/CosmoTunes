@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -16,11 +16,9 @@ interface GlassmorphismSearchBarProps {
 
 const GlassmorphismSearchBar: React.FC<GlassmorphismSearchBarProps> = ({ onSearch }) => {
     const [query, setQuery] = useState('');
-    const [loading, setLoading] = useState(false);
 
     const handleSearch = async () => {
         if (!query.trim()) return;
-        setLoading(true);
 
         try {
             const res = await fetch('/api/search', {
@@ -39,7 +37,6 @@ const GlassmorphismSearchBar: React.FC<GlassmorphismSearchBarProps> = ({ onSearc
             console.error('通信エラー:', error);
         }
 
-        setLoading(false);
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
