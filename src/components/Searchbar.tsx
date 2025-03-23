@@ -58,19 +58,13 @@ const GlassmorphismSearchBar: React.FC<GlassmorphismSearchBarProps> = ({ onSearc
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             style={{
-                position: "absolute",
-                top: "10%",
-                left: "40%",
-                transform: "translateX(-50%)",
                 zIndex: 9999,
             }}
         >
             <motion.div
                 whileHover={{ scale: 1.02 }}
                 style={{
-                    position: 'fixed',
-                    left: '35%',
-                    width: '384px',
+                    width: "600px",
                     background: 'rgba(255, 255, 255, 0.1)', 
                     backdropFilter: 'blur(5px)', 
                     WebkitBackdropFilter: 'blur(5px)',

@@ -26,13 +26,22 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body
-      
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Image src="/cosmotunes-logo.png" alt="Cosmotunes Logo" width={250} height={200} style={{
-          marginTop: "-65px",
-          textShadow: "10px 10px 10px rgba(255, 255, 255, 1)",
-        }} />
+        <a href="https://github.com/あなたのGitHubリポジトリ" target="_blank" rel="noopener noreferrer">
+          <div style={{ display: "inline-block" }}>
+            <Image
+              src="/cosmotunes-logo.png"
+              alt="Cosmotunes Logo"
+              width={250}
+              height={200}
+              style={{
+                marginTop: "-65px",
+                textShadow: "10px 10px 10px rgba(255, 255, 255, 1)",
+              }}
+            />
+          </div>
+        </a>
         {children}
       </body>
     </html>

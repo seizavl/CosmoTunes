@@ -255,22 +255,20 @@ const StarGenerate: React.FC<StarGenerateProps> = ({ songs }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}  // フェードイン・アウトの速度
+            transition={{ duration: 0.5 }} 
           >
             <AudioVisualizer />
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* 検索バーを中央に配置する親コンテナ */}
       <div style={{
         position: 'fixed',
-        top: 0,
-        left: 0,
-        height: '30vh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        top: "5%",                
+        left: "50%",               
+        transform: "translateX(-50%)", 
         zIndex: 10000
       }}>
         <GlassmorphismSearchBar onSearch={searchSongs} />
