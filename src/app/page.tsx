@@ -27,6 +27,7 @@ export default function Home() {
   return (
     <StarBackground>
       <StarGenerate songs={displayedSongs} /> {/* Keyを設定 */}
+      <b>a</b>
     </StarBackground>
   );
 }
